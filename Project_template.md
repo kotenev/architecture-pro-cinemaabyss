@@ -1,62 +1,27 @@
-## Изучите [README.md](README.md) файл и структуру проекта.
+## Изучены [README.md](README.md) файл и структура проекта.
 
 ## Задание 1
 
 1. To be архитектура КиноБездны в виде контейнерной диаграммы в нотации С4:
 [ссылка на файл](https://github.com/kotenev/architecture-pro-cinemaabyss/blob/cinema/diagrams/container/CinemaAbyss_Container.puml)
 
-
 ## Задание 2
 
 ### 1. Proxy
-Команда КиноБездны уже выделила сервис метаданных о фильмах movies и вам необходимо реализовать бесшовный переход с применением паттерна Strangler Fig в части реализации прокси-сервиса (API Gateway), с помощью которого можно будет постепенно переключать траффик, используя фиче-флаг.
+Реализован бесшовный переход с применением паттерна Strangler Fig в части реализации прокси-сервиса (API Gateway), с помощью которого можно постепенно переключать траффик, используя фиче-флаг.
 
-
-Реализуйте сервис на любом языке программирования в ./src/microservices/proxy.
-Конфигурация для запуска сервиса через docker-compose уже добавлена
-```yaml
-  proxy-service:
-    build:
-      context: ./src/microservices/proxy
-      dockerfile: Dockerfile
-    container_name: cinemaabyss-proxy-service
-    depends_on:
-      - monolith
-      - movies-service
-      - events-service
-    ports:
-      - "8000:8000"
-    environment:
-      PORT: 8000
-      MONOLITH_URL: http://monolith:8080
-      #монолит
-      MOVIES_SERVICE_URL: http://movies-service:8081 #сервис movies
-      EVENTS_SERVICE_URL: http://events-service:8082 
-      GRADUAL_MIGRATION: "true" # вкл/выкл простого фиче-флага
-      MOVIES_MIGRATION_PERCENT: "50" # процент миграции
-    networks:
-      - cinemaabyss-network
-```
-
-- После реализации запустите postman тесты - они все должны быть зеленые.
-- Отправьте запросы к API Gateway:
-   ```bash
-   curl http://localhost:8000/api/movies
-   ```
-- Протестируйте постепенный переход, изменив переменную окружения MOVIES_MIGRATION_PERCENT в файле docker-compose.yml.
+Реализован сервис на Go в ./src/microservices/proxy.
 
 ### 2. Kafka
- Вам как архитектуру нужно также проверить гипотезу насколько просто реализовать применение Kafka в данной архитектуре.
+Создан MVP сервис events, который при вызове API создаёт и сам же читает сообщения в топике Kafka.
 
-Для этого нужно сделать MVP сервис events, который будет при вызове API создавать и сам же читать сообщения в топике Kafka.
-
-    - Разработайте сервис на любом языке программирования с consumer'ами и producer'ами.
-    - Реализуйте простой API, при вызове которого будут создаваться события User/Payment/Movie и обрабатываться внутри сервиса с записью в лог
-    - Добавьте в docker-compose новый сервис, kafka там уже есть
-
-Необходимые тесты для проверки этого API вызываются при запуске npm run test:local из папки tests/postman 
-Приложите скриншот тестов и скриншот состояния топиков Kafka http://localhost:8090 
-
+    - Разработан сервис на Go с consumer'ами и producer'ами.
+    - Реализован API, при вызове которого создаются события User/Payment/Movie и обрабатываются внутри сервиса с записью в лог
+    - Новый сервис добавлен в docker-compose
+ 
+Приложены скриншот тестов и скриншот состояния топиков Kafka http://localhost:8090 :
+- [ссылка на скриншот тестов](https://github.com/kotenev/architecture-pro-cinemaabyss/blob/cinema/docs/screenshots/CinemaAbyss%20Postman%20all%20tests%20passed%20screenshot.png)
+- [ссылка на скриншот состояния топиков Kafka](https://github.com/kotenev/architecture-pro-cinemaabyss/blob/cinema/docs/screenshots/CinemaAbyss%20kafka%20topics%20screenshot.png)
 
 ## Задание 3
 
