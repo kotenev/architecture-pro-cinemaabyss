@@ -25,7 +25,32 @@ spec:
     spec:
       containers:
       - name: proxy-service
-        ..... тут
+        image: "{{ .Values.proxyService.image.repository }}:{{ .Values.proxyService.image.tag }}"
+        imagePullPolicy: {{ .Values.proxyService.image.pullPolicy }}
+        ports:
+          - containerPort: {{ .Values.proxyService.service.targetPort }}
+        env:
+          - name: PORT
+            value: "{{ .Values.proxyService.service.targetPort }}"
+          - name: EVENTS_SERVICE_URL
+            value: "http://{{ include "cinemaabyss.fullname" . }}-events-service:{{ .Values.eventsService.service.port }}"
+        envFrom:
+          - configMapRef:
+              name: cinemaabyss-config
+        resources:
+          {{- toYaml .Values.proxyService.resources | nindent 10 }}
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.proxyService.service.targetPort }}
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.proxyService.service.targetPort }}
+          initialDelaySeconds: 15
+          periodSeconds: 20
 ---
 apiVersion: v1
 kind: Service
@@ -37,6 +62,13 @@ metadata:
     app.kubernetes.io/name: {{ include "cinemaabyss.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
+  type: { { .Values.proxyService.service.type } }
+  ports:
+    - port: { { .Values.proxyService.service.port } }
+      targetPort: { { .Values.proxyService.service.targetPort } }
+      protocol: TCP
+      name: http
   selector:
-    ... и тут
+    app.kubernetes.io/name: proxy-service
+    app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}

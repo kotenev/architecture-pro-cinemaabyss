@@ -1,0 +1,57 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Container.puml
+
+title Container diagram for Cinema Abyss System
+
+' Определяем действующих лиц и внешние системы
+Person(user, "User (Пользователь)", "Клиент, использующий систему 'Кинобездна' через веб-интерфейс.")
+System_Ext(recommend_system, "External Recommend System (Внешняя рекомендательная система)", "Внешняя рекомендательная система")
+System_Ext(billing_system, "Billing System (Платёжная система)", "Платёжная система")
+System_Ext(online_cinemas, "Online Cinemas (Онлайн кинотеатры)", "Онлайн кинотеатры")
+System_Ext(S3, "S3", "Файловое хранилище")
+
+' Определяем границы системы
+System_Boundary(c1, "Cinema Abyss Ecosystem (Экосистема 'Кинобездна')") {
+
+    ' --- Клиентское приложение ---
+    Container(spa, "Single-Page Application", "JavaScript / React", "Предоставляет пользователю интерфейс в онлайн-кинотеатр")
+
+    ' --- Внутренние сервисы (микросервисы) ---
+    Container(api_gateway, "API gateway (Proxy)", "Go", "Выступает в роли фасада перед монолитом и микросервисом. Он маршрутизирует трафик на основе конфигурации с фиче-флагом")
+
+    Container(monolith, "Monolith\n(Исходное монолитное приложение)", "Go", "Отвечает за управление пользователями, метаданными фильмов, платежами, подписками")
+    ContainerDb(monolith_db, "Monolith DB\n(База данных монолита)", "PostgreSQL", "Хранит информацию о профилях пользователей, метаданных фильмов, платежей, подписках")
+
+    Container(movies_service, "Movies Service\n(Сервис фильмов)", "Go", "Отвечает за регистрацию, настройку и управление метаданными устройств")
+    ContainerDb(movies_db, "Movies DB\n(База данных фильмов)", "PostgreSQL", "Хранит информацию о метаданных фильмов, платежей, подписках")
+
+    Container(events_service, "Events Service (Сервис событий)", "Go", "Обрабатывает коммуникацию между сервисами на основе событий (фильмы, пользователи, платежи с Kafka)")
+
+    ' --- Брокер сообщений для асинхронного взаимодействия ---
+    Container(message_broker, "Message Broker (Брокер сообщений)", "Kafka", "Обеспечивает асинхронную и надёжную доставку событий")
+}
+
+' --- Определяем связи ---
+
+' Пользователь и система
+Rel(user, spa, "Просматривает данные", "HTTPS")
+Rel(spa, api_gateway, "Отправляет API-запросы", "HTTPS/JSON")
+
+' API Gateway и внутренние сервисы
+Rel(api_gateway, monolith, "Проксирует запросы аутентификации и управления профилем, метаданных фильмов, платежей, подписок", "HTTP")
+Rel(api_gateway, movies_service, "Проксирует запросы метаданных фильмов, платежей, подписок", "HTTP")
+Rel(api_gateway, events_service, "Проксирует запросы сообщений", "HTTP")
+
+' Связи сервисов с их базами данных
+Rel(monolith, monolith_db, "Читает/пишет данные", "TCP/IP")
+Rel(movies_service, movies_db, "Читает/пишет данные", "TCP/IP")
+
+' Асинхронное взаимодействие через брокер
+Rel(events_service, message_broker, "Отправляет сообщения", "TCP/IP")
+
+' Взаимодействия с внешними системами
+Rel(monolith, recommend_system, "Отправляет/получает данные в рекомендательную систему", "AMQP/MQTT")
+Rel(monolith, online_cinemas, "Отправляет данные в онлайн-кинотеатры", "HTTPS")
+Rel(monolith, S3, "Сохраняет данные", "HTTPS")
+
+@enduml
