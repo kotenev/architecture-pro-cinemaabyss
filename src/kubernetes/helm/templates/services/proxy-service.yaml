@@ -20,6 +20,9 @@ spec:
       maxUnavailable: 0
   template:
     metadata:
+      annotations:
+        checksum/config: '{ { include (print $.Template.BasePath "/configmap.yaml") . | sha256sum } }'
+        checksum/secret: '{ { include (print $.Template.BasePath "/secret.yaml") . | sha256sum } }'
       labels:
         app: proxy-service
     spec:
@@ -38,7 +41,7 @@ spec:
           - configMapRef:
               name: cinemaabyss-config
         resources:
-          {{- toYaml .Values.proxyService.resources | nindent 10 }}
+          {{- toYaml .Values.proxyService.resources | nindent 18 }}
         readinessProbe:
           httpGet:
             path: /health
@@ -62,13 +65,10 @@ metadata:
     app.kubernetes.io/name: {{ include "cinemaabyss.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
-  type: { { .Values.proxyService.service.type } }
-  ports:
-    - port: { { .Values.proxyService.service.port } }
-      targetPort: { { .Values.proxyService.service.targetPort } }
-      protocol: TCP
-      name: http
   selector:
-    app.kubernetes.io/name: proxy-service
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    app: proxy-service
+  ports:
+  - port: {{ .Values.proxyService.service.port }}
+    targetPort: {{ .Values.proxyService.service.targetPort }}
+  type: {{ .Values.proxyService.service.type }}
 {{- end }}

@@ -35,7 +35,7 @@ spec:
           - name: KAFKA_BROKERS
             value: "kafka:9092"
         resources:
-          {{- toYaml .Values.eventsService.resources | nindent 10 }}
+          {{- toYaml .Values.eventsService.resources | nindent 18 }}
         readinessProbe:
           httpGet:
             path: /api/events/health
@@ -59,13 +59,10 @@ metadata:
     app.kubernetes.io/name: {{ include "cinemaabyss.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
-  type: {{ .Values.eventsService.service.type }}
-  ports:
-    - port: {{ .Values.eventsService.service.port }}
-      targetPort: {{ .Values.eventsService.service.targetPort }}
-      protocol: TCP
-      name: http
   selector:
-    app.kubernetes.io/name: events-service
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    app: events-service
+  ports:
+  - port: {{ .Values.eventsService.service.port }}
+    targetPort: {{ .Values.eventsService.service.targetPort }}
+  type: {{ .Values.eventsService.service.type }}
 {{- end }}
