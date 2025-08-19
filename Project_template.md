@@ -40,7 +40,7 @@
 
 Приложены скриншот вывода при вызове https://cinemaabyss.example.com/api/movies и скриншот вывода event-service после вызова тестов:
 - [ссылка на скриншот вывода при вызове https://cinemaabyss.example.com/api/movies](https://github.com/kotenev/architecture-pro-cinemaabyss/blob/cinema/docs/screenshots/CinemaAbyss%20api%20movies%20URL%20browser%20screenshot.png)
-- [ссылка на скриншот вывода events-service после вызова тестов](https://github.com/kotenev/architecture-pro-cinemaabyss/blob/cinema/docs/screenshots/kubernetes%20events-service%20logs%20screenshot.png)
+- [ссылка на скриншот вывода events-service после вызова тестов](https://github.com/kotenev/architecture-pro-cinemaabyss/blob/cinema/docs/screenshots/CinemaAbyss%20kubernetes%20events-service%20logs%20screenshot.png)
 
 ## Задание 4
 Для простоты дальнейшего обновления и развертывания вам как архитектуру необходимо так же реализовать helm-чарты для прокси-сервиса и проверить работу 
